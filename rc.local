@@ -5,11 +5,11 @@ tar xjf pi.tar.bz2
 
 APP_DIR=""
 while [ "$APP_DIR" = "" ]; do
-	echo "Waiting for USB media with app/package.json and app/pindestino.conf files..."
+	echo "Waiting for USB media with app/package.json and app/pickled.conf files..."
 	for D in $(ls /media); do
 		if [ -d "/media/$D" ]; then
 			if [ -d "/media/$D/app" ]; then
-				if [ -e "/media/$D/app/pindestino.conf" ]; then
+				if [ -e "/media/$D/app/pickled.conf" ]; then
 					if [ -e "/media/$D/app/package.json" ]; then
 						APP_DIR="/media/$D/app"
 						MOUNT_DIR="/media/$D"
@@ -27,13 +27,13 @@ ln -s $APP_DIR /tmp/app
 
 cd "$APP_DIR"
 
-if [ "$(cat pindestino.conf | grep -E "usb:\s+rw")" != "" ]; then
+if [ "$(cat pickled.conf | grep -E "usb:\s+rw")" != "" ]; then
 	DEVICE="$(mount -v | grep "$MOUNT_DIR" | awk '{print $1}')"
 	echo "Mounting $DEVICE in read-write mode at $MOUNT_DIR"
 	mount -o remount,rw $DEVICE $MOUNT_DIR
 fi
 
-TIMEZONE="$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['timezone']")"
+TIMEZONE="$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['timezone']")"
 if [ "$TIMEZONE" = "" ]; then
 	TIMEZONE="Etc/UTC"
 fi
@@ -41,9 +41,9 @@ export TZ="$TIMEZONE"
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/rw/localtime
 echo "$TIMEZONE" > /etc/rw/timezone
 
-if [ "$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['wifi']")" != "" ]; then
-	NETWORK="$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['wifi']['network']")"
-	PASSWORD="$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['wifi']['password']")"
+if [ "$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['wifi']")" != "" ]; then
+	NETWORK="$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['wifi']['network']")"
+	PASSWORD="$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['wifi']['password']")"
 	echo "" >>/etc/network/interfaces
 	echo "allow-hotplug wlan0" >>/etc/network/interfaces
 	echo "auto wlan0" >>/etc/network/interfaces
@@ -59,7 +59,7 @@ fi
 /etc/init.d/networking restart
 
 mkdir /usr/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}
-KIOSK="$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['kiosk']")"
+KIOSK="$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['kiosk']")"
 if [ "$KIOSK" != "false" ]; then
 	cp /etc/xpi/*.xpi /usr/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}/
 fi
@@ -78,13 +78,13 @@ cd /usr/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}/
 	done
 cd "$APP_DIR"
 
-if [ "$(cat pindestino.conf | grep "^bootscript:")" ]; then
-	SCRIPT="$(cat pindestino.conf | grep "^bootscript:" | sed -r 's/^bootscript://' | xargs )"
+if [ "$(cat pickled.conf | grep "^bootscript:")" ]; then
+	SCRIPT="$(cat pickled.conf | grep "^bootscript:" | sed -r 's/^bootscript://' | xargs )"
 	echo "Running bootscript $SCRIPT"
 	bash $SCRIPT
 fi
 
-NODEAPP="$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['nodeapp']")"
+NODEAPP="$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['nodeapp']")"
 if [ "$NODEAPP" != "false" ]; then
 
 	echo "Starting node js app (npm start)"
@@ -100,7 +100,7 @@ fi
 killall -KILL fbi # kill the boot splash screen
 reset
 
-BROWSER="$(cat pindestino.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['browser']")"
+BROWSER="$(cat pickled.conf | ruby -ryaml -e "data = YAML::load(STDIN.read); puts data['browser']")"
 if [ "$BROWSER" != "false" ]; then
 	su - pi -c 'startx' &
 fi

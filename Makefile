@@ -1,6 +1,6 @@
 include config.mk
 
-all: testroot pindestino.img
+all: testroot pickled.img
 
 testroot:
 	@if [ "$$(whoami)" != "root" ]; then echo "Must be root. Run with sudo."; exit 1; fi
@@ -16,14 +16,14 @@ raspbian.img: raspbian.zip
 	mv ????-??-??-raspbian.img raspbian.img
 	touch raspbian.img
 
-pindestino.img: raspbian.img kernel-qemu
-	cp raspbian.img pindestino.img
+pickled.img: raspbian.img kernel-qemu
+	cp raspbian.img pickled.img
 	
 	# mount filesystems:
 	mkdir -p workboot
 	mkdir -p work
-	mount -o loop,offset=4194304 pindestino.img workboot
-	mount -o loop,offset=62914560 -t ext4 pindestino.img work
+	mount -o loop,offset=4194304 pickled.img workboot
+	mount -o loop,offset=62914560 -t ext4 pickled.img work
 	
 	# run pre-install scripts
 	for F in ${FEATURES}; do . features/$$F/pre-install.sh; done
@@ -45,11 +45,11 @@ pindestino.img: raspbian.img kernel-qemu
 	umount -l work
 	rmdir workboot
 	rmdir work
-	qemu-system-arm -kernel kernel-qemu -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda pindestino.img -nographic
+	qemu-system-arm -kernel kernel-qemu -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda pickled.img -nographic
 	mkdir -p workboot
 	mkdir -p work
-	mount -o loop,offset=4194304 pindestino.img workboot
-	mount -o loop,offset=62914560 -t ext4 pindestino.img work
+	mount -o loop,offset=4194304 pickled.img workboot
+	mount -o loop,offset=62914560 -t ext4 pickled.img work
 	
 	# remove install script:
 	cp work/home/pi/.bashrc-backup work/home/pi/.bashrc
@@ -64,4 +64,4 @@ pindestino.img: raspbian.img kernel-qemu
 	umount -l work
 	rmdir workboot
 	rmdir work
-	chmod 444 pindestino.img
+	chmod 444 pickled.img

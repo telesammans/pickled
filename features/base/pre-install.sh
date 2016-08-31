@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # tag it
-echo "pindestino aint nothin to fuk wit" >workboot/pindestino.txt
+echo "pickled" >workboot/pickled.txt
 
 # some stuff to make raspbian work nicer in qemu:
 cp work/etc/ld.so.preload work/etc/ld.so.preload.backup
